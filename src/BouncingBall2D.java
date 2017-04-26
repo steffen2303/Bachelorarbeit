@@ -142,6 +142,10 @@ public class BouncingBall2D {
     		start[1]+=Math.random()*0.1-0.05; 
     		speed[0]+=Math.random()*0.02-0.01; //0.04-0.06
     		speed[1]+=Math.random()*0.02-0.01;
+    		if(Math.random()>0.5){
+    			speed[0]*=-1;
+    			speed[1]*=-1;
+    		}
     		/*
     	 start= new double []{Math.random()*1.8-0.9,Math.random()*1.8-0.9};
          speed = new double []{Math.random()*0.2-0.1,Math.random()*0.2-0.1};
@@ -751,7 +755,7 @@ public class BouncingBall2D {
     	double[] tar = new double[outlayer]; 
     	double error=0;
     	if(feedback){
-    		//int teacher = (int) (length*(0.3+1-((float)currepoch)/epochs));
+    		//int teacher = (int) (length*(0.3+1-((float)currepoch)/epochs)); 
     		int teacher = (int) (length*0.7);
 
             net.reset();

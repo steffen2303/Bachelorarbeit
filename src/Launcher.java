@@ -10,7 +10,7 @@ public class Launcher {
 		  	
 		  	
 		 // zero pos posnext noicepos speed event - keep order!
-		  	String in[] = new String[]{"noicepos"}; 
+		  	String in[] = new String[]{"pos"}; 
 		  	String out[] = new String[]{"speed"};
 		  	
 		  	String hid = "-tanh6b-";
@@ -21,7 +21,7 @@ public class Launcher {
 	    	
 	    	// trainingsparameter
 	    	
-	        final int    epochs          = 50000;
+	        final int    epochs          = 5;
 	        final int  length = 300;
 	        final int trainsize = 500;
 	        final double learningrate    = 0.001;
@@ -36,7 +36,7 @@ public class Launcher {
 	        
 	        // Anzeige parameter
 	        final int ystretch =3;
-	        boolean feedback = true; // Testfall, vorgegebner Input oder eigenen Output als Input nutzen?
+	        boolean feedback = false; // Testfall, vorgegebner Input oder eigenen Output als Input nutzen?
 	        
 	        if(Dim==2){
 	        	BouncingBall2D bb = new BouncingBall2D(random,in,out,hid,train,trainmlp,epochs,length,trainsize,learningrate,beta1,beta2,epsilon,biascorrection,ystretch,feedback);
