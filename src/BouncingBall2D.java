@@ -138,14 +138,40 @@ public class BouncingBall2D {
     	double[] start = new double []{0.9,0.1};
     	double[] speed = new double []{-0.05,0.05};
     	if(random){
-    		start[0]+=Math.random()*0.1-0.05;
+    		start[0]=((float)(int)(Math.random()*16-8))*0.05;
+    		start[0]=((float)(int)(Math.random()*16-8))*0.05;
+    		for(int i=0;i<2;i++){
+    		int rnd = (int)(Math.random()*7);
+    			switch(rnd){
+    			case 1:
+    			case 2:	
+    				speed[i]=-0.05;
+    			break;
+    			case 3:
+    			case 4:	
+    				speed[i]=0.05;
+    			break;
+    			case 5:	
+    				speed[i]=-0.1;
+    			break;
+    			case 6:	
+    				speed[i]=0.1;
+    			break;
+    			
+    				
+    			}
+    		}
+    		
+    /*		start[1]+=Math.random()*0.1-0.05; 
     		start[1]+=Math.random()*0.1-0.05; 
     		speed[0]+=Math.random()*0.02-0.01; //0.04-0.06
     		speed[1]+=Math.random()*0.02-0.01;
+    		
     		if(Math.random()>0.5){
     			speed[0]*=-1;
     			speed[1]*=-1;
     		}
+    		*/
     		/*
     	 start= new double []{Math.random()*1.8-0.9,Math.random()*1.8-0.9};
          speed = new double []{Math.random()*0.2-0.1,Math.random()*0.2-0.1};
@@ -582,8 +608,8 @@ public class BouncingBall2D {
 
 
             //final Net mlp = trainMLP(net,target,eventarray,trainmlp);
-           final Net mlp2 = trainMLP(net,target,eventarray,trainmlp,2);
-           final Net mlp1 = trainMLP(net,target,eventarray,trainmlp,1);
+           final Net mlp2 = trainMLP(net,input,eventarray,trainmlp,2);
+           final Net mlp1 = trainMLP(net,input,eventarray,trainmlp,1);
             
             frame.addMouseListener(new MouseAdapter() {
                 @Override
@@ -933,7 +959,7 @@ public class BouncingBall2D {
 		
 	}
     
-	private  Net trainMLP(Net net, double[] target, Event[] eventarray, boolean trainmlp) throws IOException, ClassNotFoundException {
+	private  Net trainMLP(Net net, double[] input, Event[] eventarray, boolean trainmlp) throws IOException, ClassNotFoundException {
 		 MLPGenerator gen = new MLPGenerator();
 	        //
 	        // setup layers.
@@ -953,16 +979,16 @@ public class BouncingBall2D {
 		 	SampleSet set = new SampleSet();
 		 	int sincelastevent = 0;
 		 	
-		 	for(int t=0; t<target.length/2;t++){
+		 	for(int t=0; t<input.length/2;t++){
 		 		int eventnum = 0;
 		 		for(Event ev : eventarray){
        			if(ev.uperbound){
-       				if(target[t*2+ev.varnum]<ev.value){
+       				if(input[t*2+ev.varnum]<ev.value){
        					eventnum++;
        					continue;
        				}
        			}else{
-       				if(target[t*2+ev.varnum]>ev.value){
+       				if(input[t*2+ev.varnum]>ev.value){
        					eventnum++;
        					continue;
        				}
@@ -1005,7 +1031,7 @@ public class BouncingBall2D {
 	          learning.setNet(mlp);
 	          learning.setSampling(Sampling.STOCHASTIC);
 	          learning.setTrainingSamples(set);
-	          learning.setEpochs(50);
+	          learning.setEpochs(500);
 	          learning.setOptimizer(optimizer);
 	        //
 	        // perform training and print final error.
@@ -1024,7 +1050,7 @@ public class BouncingBall2D {
 	 
 	        return mlp;
 	}
-	private  Net trainMLP(Net net, double[] target, Event[] eventarray, boolean trainmlp, int gate) throws IOException, ClassNotFoundException {
+	private  Net trainMLP(Net net, double[] input, Event[] eventarray, boolean trainmlp, int gate) throws IOException, ClassNotFoundException {
 		 MLPGenerator gen = new MLPGenerator();
 	        //
 	        // setup layers.
@@ -1044,16 +1070,16 @@ public class BouncingBall2D {
 		 	SampleSet set = new SampleSet();
 		 	int sincelastevent = 0;
 		 	
-		 	for(int t=0; t<target.length/outlayer;t++){
+		 	for(int t=0; t<input.length/outlayer;t++){
 		 		int eventnum = 0;
 		 		for(Event ev : eventarray){ //only makes sense when only position is in target
       			if(ev.uperbound){
-      				if(target[t*2+ev.varnum]<ev.value){
+      				if(input[t*2+ev.varnum]<ev.value){
       					eventnum++;
       					continue;
       				}
       			}else{
-      				if(target[t*2+ev.varnum]>ev.value){
+      				if(input[t*2+ev.varnum]>ev.value){
       					eventnum++;
       					continue;
       				}
@@ -1096,7 +1122,7 @@ public class BouncingBall2D {
 	          learning.setNet(mlp);
 	          learning.setSampling(Sampling.STOCHASTIC);
 	          learning.setTrainingSamples(set);
-	          learning.setEpochs(50);
+	          learning.setEpochs(500);
 	          learning.setOptimizer(optimizer);
 	        //
 	        // perform training and print final error.
