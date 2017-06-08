@@ -4,6 +4,8 @@ kompletter outputbuffer von letztem zeitframe in neuen zeitframe, 50% 50% manchm
  * 
  * random speed im 2d:
  * zu langsam, dann gibts nicht genug bounces zum lernen, zu schnell dann unsauberes kanten verhalten
+ * 
+ * hohe länge
  */
 
 /*
@@ -25,4 +27,6 @@ String in[] = new String[]{"pos"};
 		  	String out[] = new String[]{"speed","event"};
 		  	
 		  	String hid = "-tanh16b-";
+		  	
+		  	unterscheide: events von input ausgelößt und von rekurrenz ausgelößt
 */

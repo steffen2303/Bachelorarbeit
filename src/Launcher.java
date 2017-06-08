@@ -5,7 +5,7 @@ public class Launcher {
 	  public static void main(String[] args) throws IOException, ClassNotFoundException {
 	        //
 		  
-		  	int Dim = 2; //false = OneDim
+		  	int Dim = 2; 
 		  	boolean random = true;
 		  	
 		  	
@@ -13,7 +13,7 @@ public class Launcher {
 		  	String in[] = new String[]{"noicepos"}; 
 		  	String out[] = new String[]{"posnext"};
 		  	
-		  	String hid = "-tanh16b-";
+		  	String hid = "-tanh6b-linear6b-";
 		  	
 	    	boolean train = true;
 	    	boolean trainmlp = true; //TODO MLP macht nur Sinn wenn target position ist
@@ -21,9 +21,9 @@ public class Launcher {
 	    	
 	    	// trainingsparameter
 	    	
-	        final int    epochs          = 10000;
+	        final int    epochs          = 5;
 	        final int  length = 300;
-	        final int trainsize = 100;
+	        final int trainsize = 1000;
 	        final double learningrate    = 0.001;
 	        
 	        
@@ -36,13 +36,14 @@ public class Launcher {
 	        
 	        // Anzeige parameter
 	        final int ystretch =3;
-	        boolean feedback = true; // Testfall, vorgegebner Input oder eigenen Output als Input nutzen?
+	        boolean feedback = false; // Testfall, vorgegebner Input oder eigenen Output als Input nutzen?
+	        boolean online = false; 
 	        
 	        if(Dim==2){
-	        	BouncingBall2D bb = new BouncingBall2D(random,in,out,hid,train,trainmlp,epochs,length,trainsize,learningrate,beta1,beta2,epsilon,biascorrection,ystretch,feedback);
+	        	BouncingBall2D bb = new BouncingBall2D(random,in,out,hid,train,trainmlp,epochs,length,trainsize,learningrate,beta1,beta2,epsilon,biascorrection,ystretch,feedback, online);
 	        	
 	        }else{
-	        	BouncingBall1D bb = new BouncingBall1D(random,in,out,hid,train,trainmlp,epochs,length,trainsize,learningrate,beta1,beta2,epsilon,biascorrection,ystretch,feedback);
+	        	BouncingBall1D bb = new BouncingBall1D(random,in,out,hid,train,trainmlp,epochs,length,trainsize,learningrate,beta1,beta2,epsilon,biascorrection,ystretch,feedback, online);
 	            
 	        }
 		

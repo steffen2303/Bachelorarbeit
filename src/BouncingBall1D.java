@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
@@ -74,12 +75,15 @@ public class BouncingBall1D {
     // Anzeige parameter
 	private  int ystretch;
 	private int currepoch =0;
+	private double[] ballin;
+	private double[] ballinprev;
 	private boolean feedback;
+	private boolean online;
 	private String weightString;
     private static TimeCounter TC = new TimeCounter();
     private static Random rnd = new Random(0L);
 	
-	public BouncingBall1D(boolean random, String[] in, String[] out, String hid, boolean train, boolean trainmlp, int epochs, int length, int trainsize, double learningrate, double beta1, double beta2, double epsilon, boolean biascorrection, int ystretch, boolean feedback) throws ClassNotFoundException, IOException{
+	public BouncingBall1D(boolean random, String[] in, String[] out, String hid, boolean train, boolean trainmlp, int epochs, int length, int trainsize, double learningrate, double beta1, double beta2, double epsilon, boolean biascorrection, int ystretch, boolean feedback, boolean online) throws ClassNotFoundException, IOException{
 	  	this.random = random;
 		this.in= in; //
 	  	this.out= out; //
@@ -96,6 +100,7 @@ public class BouncingBall1D {
         this.biascorrection = biascorrection;
         this.ystretch = ystretch;
         this.feedback = feedback;
+        this.online = online;
         this.eventarray = new Event[]{new Event("Linker Bounce",0,-1,false,Color.gray), new Event("Rechter Bounce",0,1,true,Color.black)};
         inlayer=0;
         for(int i=0; i<in.length; i++){
@@ -127,6 +132,8 @@ public class BouncingBall1D {
         		outlayer +=eventarray.length;
         	}
         }
+        ballin = new double[inlayer];
+        ballinprev = new double[inlayer];
         run();
 	}//end constructor
     
@@ -260,9 +267,12 @@ public class BouncingBall1D {
         	weightString +=out[i];
         }
         weightString +="random"+random;
+        weightString +="online"+online;
         String netString = "LSTM-"+inlayer+hid+"linear"+outlayer+"b";
         final Net net = GenerateNetworks.generateNet(netString);
-        net.rebuffer(length);
+        
+        if(online)net.rebuffer(1);
+        else net.rebuffer(length);
         
 
         final SampleSet trainset = generate(trainsize, length);
@@ -297,6 +307,27 @@ public class BouncingBall1D {
                   // of the network carrying the previously updated
                   // weights.
                   //
+            	  
+            	  if(online){
+            		  if(currepoch ==0){
+            			  trainset.shuffle(rnd);
+                      generateOnlineSample(net,trainset.get(0));
+            		  }
+
+                  
+                    
+                    double error = produceNetoutputOnline(net);
+                    
+                  	
+                  	
+                  	net.computeGradient();
+                    net.readGradWeights(grad, gradoffset);
+                      currepoch++;
+                	  
+                      return error;
+                	
+            	  }else{
+            	  
                   trainset.shuffle(rnd);
               	//washoutphase in gradienten mit rein?
               	final double[] input = trainset.get(0).input.data;
@@ -310,11 +341,15 @@ public class BouncingBall1D {
               	net.computeGradient();
                 net.readGradWeights(grad, gradoffset);
                   currepoch++;
+            	  
                   return error;
-              }
+            	  } // end not alternative
+            }
               //
              
-              public int arity() {
+           
+
+			public int arity() {
                   //
                   // the number of weights of the network gives
                   // the arity of the fitness fuction.
@@ -322,7 +357,6 @@ public class BouncingBall1D {
                   return net.getWeightsNum();
               }
 			public double compute(double[] arg0, int arg1) {
-				// TODO Auto-generated method stub
 				return 0;
 			}
 			
@@ -463,11 +497,11 @@ public class BouncingBall1D {
                 	colors[i] = new Color((123*i)%255,(456*i)%255,(789*i)%255); //not random because i want same colors for same cells each run
                 }
                           
-            
-            //prepare input, target and netouput for drawing
-            final double[] input = testset.get(0).input.data;
-            final double[] target = testset.get(0).target.data;
-            final double[] netoutput = new double[target.length];
+            net.rebuffer(length);
+                final double[] input = testset.get(0).input.data;
+                final double[] target = testset.get(0).target.data;
+                final double[] netoutput = new double[target.length];
+     
             produceNetoutput(net, input,target,netoutput);
             
                 final ArrayList<Line> LineListe = getLines(target,netoutput,input);
@@ -573,9 +607,7 @@ public class BouncingBall1D {
                         			int y1 = my-(int)(0.8*my);
                         			int y2 = my+(int)(0.8*my);
                         			int a = (int) (l.data[timestep[0]*2]*240+2);
-                        			System.out.println(a);
-                        			a=Math.abs(a);
-                        			System.out.println(a);
+                        			
                         			imggfx.setColor(new Color(a,a,a));
                                     imggfx.drawLine(x1,y1,x2,y2);
                                      x1 = mx-(int)(0.8*mx);
@@ -583,10 +615,7 @@ public class BouncingBall1D {
                         			y1 = my-(int)(0.8*my);
                         			 y2 = my+(int)(0.8*my);
                         			a = (int) (l.data[timestep[0]*2+1]*240+2);
-                        			System.out.println(a);
-                        			a=Math.abs(a);
-                        			
-                        			System.out.println(a);
+                        		
                         			imggfx.setColor(new Color(a,a,a));
                                     imggfx.drawLine(x1,y1,x2,y2);
                         		}
@@ -643,9 +672,83 @@ public class BouncingBall1D {
 
     }
     
+    private double produceNetoutputOnline(Net net) {
+	
+    	if(in.length>1||(in[0]!="pos"&&in[0]!="noicepos")){
+    		System.out.println("Feedback & Online not possible");
+    		return -1;
+    	}
+    	int sp = -1;
+    	int pn = -1;
+    	for(int i=0; i<out.length;i++){
+			if(out[i]=="speed") sp=i;
+			if(out[i]=="posnext") pn=i;
+		}
+    	if(sp*pn==1){
+    		System.out.println("Feedback & Online not possible");
+    		return -1;
+    	}
+    	double[] speed = new double[inlayer];
+    	double[] out = new double[outlayer];
+    	
+    	for(int j=0; j<inlayer; j++){
+    		speed[j]= ballin[j]- ballinprev[j];
+    		if(Math.abs(ballin[j])>1){
+    			speed[j] *= -1;
+    		}
+    		ballinprev[j]= ballin[j];
+    		ballin[j] = ballinprev[j]+speed[j];
+    	}
+    	
+    	double error =0;
+    	
+            	
+            	net.input(ballinprev, 0);
+            	net.compute();
+            	net.output(out,  0);
+            	if(pn>=0){
+            		net.target(ballin, 0); 
+            		net.injectError();
+                    error += Error.computeRMSE(
+                            out, 0, ballin, 0, outlayer );
+            	}else{ //output = speed
+            		net.target(speed, 0);
+            		net.injectError();
+                    error += Error.computeRMSE(
+                            out, 0, speed, 0, outlayer );
+            	}
+            	if(feedback){
+            		if(ballin.length != out.length) while(true)System.out.println("Online für multiplen Output nicht fertig");
+            		for(int j=0; j<inlayer; j++){
+            			if(pn>=0)
+            				ballin[j]=out[j];
+            			else
+            				ballin[j]= ballinprev[j]+speed[j];
+            		}
+            	}
+            
+    
+		return error;
+	}
+
+	private void generateOnlineSample(Net net, Sample sample) {
+		// include washout for net
+		net.reset();
+		int teacher = 100;
+		while (teacher*inlayer > sample.input.data.length) teacher -= 10; //should never happen
+		for(int i=0; i <teacher;i++){
+		
+    	for(int j=0;j<inlayer;j++){
+    		ballinprev[j] = ballin[j];
+    		ballin[j]=sample.input.data[i*inlayer+j];
+    	}
+    	net.input(ballin, 0);
+    	net.compute();
+		}
+	}
     
     private double produceNetoutput(Net net, double[] input, double[] target, double[] netoutput) {
-		// TODO Auto-generated method stub
+		
     	
     	if(in.length>1||(in[0]!="pos"&&in[0]!="noicepos")){
     		System.out.println("Feedback not possible");

@@ -69,6 +69,7 @@ public class BouncingBall2D {
     // Anzeige parameter
 	private  int ystretch;
 	private boolean feedback;
+	private boolean online;
 	private String weightString;
 	private int currepoch;
 	
@@ -77,7 +78,7 @@ public class BouncingBall2D {
     
    
     
-    public BouncingBall2D(boolean random, String[] in, String[] out, String hid, boolean train, boolean trainmlp, int epochs, int length, int trainsize, double learningrate, double beta1, double beta2, double epsilon, boolean biascorrection, int ystretch, boolean feedback) throws ClassNotFoundException, IOException{
+    public BouncingBall2D(boolean random, String[] in, String[] out, String hid, boolean train, boolean trainmlp, int epochs, int length, int trainsize, double learningrate, double beta1, double beta2, double epsilon, boolean biascorrection, int ystretch, boolean feedback, boolean online) throws ClassNotFoundException, IOException{
 	  	this.random = random;
 		this.in= in; //
 	  	this.out= out; //
@@ -94,6 +95,7 @@ public class BouncingBall2D {
         this.biascorrection = biascorrection;
         this.ystretch = ystretch;
         this.feedback = feedback;
+        this.online = online;
         this.currepoch = 0;
         this.eventarray = new Event[]{new Event("Linker Bounce",0,-1,false,Color.gray), new Event("Rechter Bounce",0,1,true,Color.black),new Event("Unterer Bounce",1,1,true,Color.black),new Event("Oberer Bounce",1,-1,false,Color.black)};
         inlayer=0;
@@ -354,13 +356,13 @@ public class BouncingBall2D {
                     trainset.shuffle(rnd);
                 	//washoutphase in gradienten mit rein?
                     double error=0;
-                    for(int i=0; i<trainset.size();i++){
-                	final double[] input = trainset.get(i).input.data;
-                  final double[] target = trainset.get(i).target.data;
-                  final double[] netoutput = new double[target.length];
-                  
-                 error += produceNetoutput(net, input,target,netoutput);
-                    }
+                    
+                    	final double[] input = trainset.get(0).input.data;
+                		final double[] target = trainset.get(0).target.data;
+                		final double[] netoutput = new double[target.length];
+                   
+                		error += produceNetoutput(net, input,target,netoutput);
+                    
                 	
                 	
                 	net.computeGradient();
@@ -419,7 +421,8 @@ public class BouncingBall2D {
                 " ms."
             );
             double[] solution = new double[net.getWeightsNum()];
-            optimizer.readBestSolution(solution, 0);
+            optimizer.readBestSolution(solution, 0); //vs readcurrentsolut
+            //optimizer.readCurrentSolution(target, offset);
             net.writeWeights(solution, 0);
    
             Serializer.write(solution, weightString+".weights");
