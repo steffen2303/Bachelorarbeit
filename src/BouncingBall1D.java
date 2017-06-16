@@ -703,6 +703,9 @@ public class BouncingBall1D {
     	double error =0;
     	
             	
+            	
+            	
+            	
             	net.input(ballinprev, 0);
             	net.compute();
             	net.output(out,  0);

@@ -330,7 +330,7 @@ public class BouncingBall2D {
       	}else{
       		
 
-
+      	
             //
             // setup network.
             //
@@ -785,7 +785,7 @@ public class BouncingBall2D {
     	double error=0;
     	if(feedback){
     		//int teacher = (int) (length*(0.3+1-((float)currepoch)/epochs)); 
-    		int teacher = (int) (length*0.7);
+    		int teacher = (int) (length*0.6);
 
             net.reset();
             for(int i=0; i<input.length/inlayer;i++){
@@ -800,6 +800,7 @@ public class BouncingBall2D {
             		tar[j]=target[i*outlayer+j];
             	net.target(tar, 0);
                 net.injectError();
+             
                 error += Error.computeRMSE(
                         out, 0, tar, 0, outlayer );
             	for(int j=0;j<outlayer;j++)
@@ -1149,6 +1150,14 @@ public class BouncingBall2D {
 	private static double[][] getGates(Net net, int g) {
 		final int idx = net.getStructure().arrays[g].cellslbd;
         final int num = net.getStructure().arrays[g].cellsnum;
+        
+        
+        /*//TODO 
+         * et.getGradOutputBuffer(zeitschritt)[neuron=g]=-1
+            	net.computeGradient();
+         * 
+         * 
+         */
       
         double[][] act =new double [num][net.getFramesNum()];
        for(int j=0; j<net.getFramesNum();j++){

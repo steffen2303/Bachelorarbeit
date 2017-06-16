@@ -11,9 +11,9 @@ public class Launcher {
 		  	
 		 // zero pos posnext noicepos speed event - keep order!
 		  	String in[] = new String[]{"noicepos"}; 
-		  	String out[] = new String[]{"posnext"};
+		  	String out[] = new String[]{"speed"};
 		  	
-		  	String hid = "-tanh6b-linear6b-";
+		  	String hid = "-tanh6b-";
 		  	
 	    	boolean train = true;
 	    	boolean trainmlp = true; //TODO MLP macht nur Sinn wenn target position ist
@@ -23,7 +23,7 @@ public class Launcher {
 	    	
 	        final int    epochs          = 5;
 	        final int  length = 300;
-	        final int trainsize = 1000;
+	        final int trainsize = 10;
 	        final double learningrate    = 0.001;
 	        
 	        
@@ -36,7 +36,7 @@ public class Launcher {
 	        
 	        // Anzeige parameter
 	        final int ystretch =3;
-	        boolean feedback = false; // Testfall, vorgegebner Input oder eigenen Output als Input nutzen?
+	        boolean feedback = true; // Testfall, vorgegebner Input oder eigenen Output als Input nutzen?
 	        boolean online = false; 
 	        
 	        if(Dim==2){
